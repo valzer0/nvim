@@ -1,0 +1,47 @@
+return {
+  {
+    "stevearc/conform.nvim",
+    config = function()
+      require("conform").setup({
+        -- フォーマット設定
+        formatters_by_ft = {
+          c = { "prettier" },
+          cpp = { "prettier" },
+          javascript = { "prettier" },
+          typescript = { "prettier" },
+          typescriptreact = { "prettier" },
+          json = { "prettier" },
+          html = { "prettier" },
+          -- css = { "stylelint" },
+          -- scss = { "stylelint" },
+          css = { "prettier" },
+          scss = { "prettier" },
+          yaml = { "prettier" },
+          markdown = { "prettier" },
+          lua = { "stylua" },
+        },
+        formatters = {
+          stylelint = {
+            command = "stylelint",
+            args = { "--fix", "--stdin", "--stdin-filename", "$FILENAME" },
+            stdin = true,
+          },
+        },
+        -- format_on_save = {
+        --   lsp_fallback = true,
+        --   timeout_ms = 1000,
+        -- },
+
+        -- 保存時自動フォーマット
+        format_on_save = function(bufnr)
+          -- .sqlのみスキップ
+          local ft = vim.bo[bufnr].filetype
+          if ft == "sql" then
+            return
+          end
+          return { lsp_fallback = true, timeout_ms = 1000 }
+        end
+      })
+    end,
+  },
+}

@@ -1,0 +1,128 @@
+-- return {
+--   "folke/snacks.nvim",
+--   priority = 1000,
+--   lazy = false,
+--   opts = {
+--     bufdelete = { enabled = true },
+--     picker    = { enabled = true },
+--     words     = { enabled = true },
+--     terminal  = { enabled = true },
+--     -- 他のモジュールも同様に enable できます
+--     dashboard = {
+--       preset = {
+--         -- pick = function(cmd, opts)
+--         --   return LazyVim.pick(cmd, opts)()
+--         -- end,
+--         header = [[
+--         ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z
+--         ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z
+--         ██║     ███████║  ███╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z
+--         ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z
+--         ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║
+--         ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝
+--         ]],
+--         -- stylua: ignore
+--         ---@type snacks.dashboard.Item[]
+--         keys = {
+--           { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+--           { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+--           { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+--           { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+--           { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
+--           { icon = " ", key = "s", desc = "Restore Session", section = "session" },
+--           { icon = " ", key = "x", desc = "Lazy Extras", action = ":LazyExtras" },
+--           { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+--           { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+--         },
+--       },
+--     },
+--   },
+--   keys = {
+--     { "<leader>e", function() require("snacks").explorer() end,                desc = "File Explorer" },
+--     { "]]",        function() require("snacks").words.jump(vim.v.count1) end,  desc = "Next Reference" },
+--     { "[[",        function() require("snacks").words.jump(-vim.v.count1) end, desc = "Prev Reference" },
+--     { "<c-_>",     function() require("snacks").terminal() end,                desc = "Toggle Terminal" },
+--     -- 必要に応じてキーマッピング追加可
+--   },
+-- }
+
+
+-- snacks.nvim プラグインの設定
+-- UI/UX 全般（通知、ファイル選択、インデント、ダッシュボードなど）を統合的に改善する Neovim 向けプラグイン
+-- https://github.com/folke/snacks.nvim
+
+return {
+  "folke/snacks.nvim",
+
+  lazy = false,   -- false にすると起動時に即読み込まれる（dashboard など即座に必要な機能が有効になる）
+  priority = 999, -- 見た目や UI を司るため、他のプラグインより先に読み込むようにする
+
+  -- snacks.nvim の各種モジュールごとの有効/無効設定
+  opts = {
+    bigfile = { enabled = true },                  -- 非常に大きなファイルに対して軽量化を施す
+    dashboard = { enabled = true },                -- 起動時のダッシュボード（スタート画面）を表示
+    explorer = { enabled = true },                 -- ファイル・ディレクトリのブラウジング UI
+    indent = { enabled = true },                   -- インデントガイドの表示を改善
+    input = { enabled = true },                    -- 入力プロンプトの見た目を改善（例：:rename など）
+    notifier = { enabled = true, timeout = 3000 }, -- 通知表示機能（nvim-notify のようなもの）
+    picker = { enabled = true },                   -- Telescope 風のファイルピッカー機能
+    quickfile = { enabled = true },                -- クイックアクセス用のファイルリスト機能
+    scope = { enabled = true },                    -- カーソルスコープの可視化（関数やブロック範囲など）
+    scroll = { enabled = true },                   -- スクロール時のアニメーションなどの視覚的改善
+    statuscolumn = { enabled = true },             -- ステータスカラム（行番号横）のカスタマイズ
+
+    words = { enabled = true },                    -- 変数や識別子の参照ジャンプなど（LSP連携）
+
+    -- 以下のモジュールはまだ使用していませんが、今後使える可能性があります：
+    -- scratch = { enabled = true },       -- 一時的なメモ・コード置き場に便利な scratch buffer を提供
+    -- terminal = { enabled = true }, -- 統合ターミナル UI（toggle のように使える）
+    -- toggle = { enabled = true }, -- 表示/非表示切り替え可能な UI 部品を定義可能
+    zen = { enabled = true }, -- zen-mode.nvim に類似した集中モードの表示
+  },
+
+  -- snacks.nvim 向けのカスタムキーマッピング設定
+  keys = {
+    {
+      "<leader><space>",
+      function() require("snacks").picker.smart() end,
+      desc = "Smart Find Files", -- ファイル or Git 対象を自動選別して検索
+    },
+    {
+      "<leader>,",
+      function() require("snacks").picker.buffers() end,
+      desc = "Buffers", -- 開いているバッファを一覧表示
+    },
+    {
+      "<leader>/",
+      function() require("snacks").picker.grep() end,
+      desc = "Grep", -- カレントディレクトリ内のファイルを grep 検索
+    },
+    {
+      "<leader>e",
+      function()
+        require("snacks").explorer()
+      end,
+      desc = "File Explorer", -- snacks 独自のファイルエクスプローラを起動
+    },
+    {
+      "<leader>gg",
+      function() require("snacks").lazygit() end,
+      desc = "Lazygit", -- ターミナル内に lazygit を表示（lazygit インストール済が前提）
+    },
+    {
+      "<C-/>",
+      function() require("snacks").terminal() end,
+      desc = "Toggle Terminal", -- snacks 内蔵のターミナルを表示/非表示（scratch 連携も可能）
+    },
+    {
+      "]]",
+      function() require("snacks").words.jump(vim.v.count1) end,
+      desc = "Next Reference", -- 次の参照（識別子や変数の次出現位置）へジャンプ
+    },
+    {
+      "[[",
+      function() require("snacks").words.jump(-vim.v.count1) end,
+      desc = "Prev Reference", -- 前の参照（識別子や変数の前出現位置）へジャンプ
+    },
+  },
+}

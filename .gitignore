@@ -1,0 +1,28 @@
+# ---- Neovim ----
+
+# プラグインマネージャが作るキャッシュ・インストール先
+# 例: packer.nvim / lazy.nvim / dein.vim など
+plugin/
+pack/
+site/pack/
+lazy-lock.json
+
+# neovimのログ・セッション・スワップ・バックアップ・undoファイル
+*.log
+*.swp
+*.swo
+*.tmp
+*.bak
+*.undo
+
+# LSPやツリーシッターのキャッシュ
+.lsp/
+ts-parsers/
+parser/
+
+# OS依存ファイル（Macなど）
+.DS_Store
+
+# その他: 個人環境依存ファイル
+*.local.vim
+
