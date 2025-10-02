@@ -1,0 +1,227 @@
+-- PHP
+local ls = require("luasnip")
+local sp = ls.snippet
+local t = ls.text_node
+local i = ls.insert_node
+local rep = require("luasnip.extras").rep
+
+---@alias NodeSpec string|integer|{ [1]: integer, [2]: string }|string[]
+---@alias Block NodeSpec[]
+
+-- NodeSpec 判定
+local function is_nodespec(v)
+	local tv = type(v)
+	if tv == "string" or tv == "number" then
+		return true
+	elseif tv == "table" then
+		if type(v[1]) == "number" then
+			return true
+		else
+			for k = 1, #v do
+				if type(v[k]) ~= "string" then
+					return false
+				end
+			end
+			return true
+		end
+	end
+	return false
+end
+
+-- Block 判定（= NodeSpec[]）
+local function is_block(tbl)
+	if type(tbl) ~= "table" then
+		return false
+	end
+	for k = 1, #tbl do
+		if not is_nodespec(tbl[k]) then
+			return false
+		end
+	end
+	return true
+end
+
+-- NodeSpec → LuaSnip ノード
+-- in_2d が true の場合、数値は正: i(n)、負: rep(-n) とする
+local function to_node(v, in_2d)
+	local tv = type(v)
+	if tv == "string" then
+		return t({ v })
+	elseif tv == "number" then
+		if in_2d and v < 0 then
+			return rep(-v)
+		else
+			return i(v)
+		end
+	elseif tv == "table" then
+		if type(v[1]) == "number" then
+			-- { idx, default } は従来通り insert_node 扱い（負を rep にしたいならここも分岐可）
+			return i(v[1], v[2])
+		else
+			return t(v)
+		end
+	end
+	return t({ "" })
+end
+
+---@overload fun(items: Block): table
+---@param items Block[]  # 二次元（ブロック配列）
+---@return table         # LuaSnip nodes array
+local function build_nodes(items)
+	-- 二次元（先頭要素が Block の場合）
+	if type(items) == "table" and is_block(items[1]) then
+		local out = {}
+		for bi = 1, #items do
+			local block = items[bi]
+			for j = 1, #block do
+				out[#out + 1] = to_node(block[j], true) -- ← 二次元フラグ ON
+			end
+			-- ブロック末尾に改行ブロック
+			out[#out + 1] = t({ "", "" })
+		end
+		return out
+	end
+
+	-- 一次元（そのまま）
+	if is_block(items) then
+		local out = {}
+		for k = 1, #items do
+			out[#out + 1] = to_node(items[k], false) -- ← 二次元フラグ OFF
+		end
+		return out
+	end
+
+	return { t({ "" }) }
+end
+
+return {
+	sp(
+		"test",
+		build_nodes({
+			{ "<?php" },
+			{ "   ", 1 },
+			{ "?>" },
+		})
+	),
+	sp("fds", build_nodes({ "<?php ", 1, " ?>" })),
+	sp(
+		"tags",
+		build_nodes({
+			"<", { 1, "div" }, ' class=""',
+			" >",
+			2,
+			"</",
+			-1,
+			">",
+		})
+	),
+	sp("fd", {
+		t({ "<?php " }),
+		t({ "", "  " }),
+		i(0),
+		t({ "", "?>" }),
+	}),
+	-- HTMLタグ
+	sp("tag", {
+		t("<"),
+		i(1, "div"),
+		t(' class="'),
+		i(2),
+		t('">'),
+		i(3),
+		t("</"),
+		rep(1),
+		t(">"),
+	}),
+	sp("tagd", {
+		t('<div class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</div>"),
+	}),
+	sp("tagi", {
+		t('<i class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</i>"),
+	}),
+	sp("tags", {
+		t('<span class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</span>"),
+	}),
+	sp("tagu", {
+		t('<div class="'),
+		i(1),
+		t('"><ul>'),
+		i(0),
+		t("</ul></div>"),
+	}),
+	sp("tago", {
+		t('<div class="'),
+		i(1),
+		t('"><ol>'),
+		i(0),
+		t("</ol></div>"),
+	}),
+	sp("tagl", {
+		t("<li key={"),
+		i(1),
+		t("}>"),
+		i(0),
+		t("</li>"),
+	}),
+	sp("tagc", {
+		t('<section class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</section>"),
+	}),
+	sp("tagh2", {
+		t('<h2 class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</h2>"),
+	}),
+	sp("tagh3", {
+		t('<h3 class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</h3>"),
+	}),
+	sp("tagh4", {
+		t('<h4 class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</h4>"),
+	}),
+	sp("tagh5", {
+		t('<h5 class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</h5>"),
+	}),
+	sp("tagh6", {
+		t('<h6 class="'),
+		i(1),
+		t('">'),
+		i(0),
+		t("</h6>"),
+	}),
+	sp("taga", {
+		t("<a href="),
+		i(1),
+		t(">"),
+		i(0),
+		t("</a>"),
+	}),
+}

@@ -1,18 +1,22 @@
 local function vimKeymapSet(mode, command, callback, desc)
-  vim.keymap.set(mode, command, callback, { noremap = true, silent = true, desc = desc })
+	vim.keymap.set(mode, command, callback, { noremap = true, silent = true, desc = desc })
+end
+
+local function opts(desc)
+	return { desc = "nvim-tree: " .. desc, noremap = true, silent = true, nowait = true }
 end
 
 -- テキストの折り返しのON/OFF
 local function ToggleWrap()
-  if vim.wo.wrap then
-    vim.wo.wrap = false
-    vim.wo.linebreak = false
-    print("Wrap OFF")
-  else
-    vim.wo.wrap = true
-    vim.wo.linebreak = true
-    print("Wrap ON")
-  end
+	if vim.wo.wrap then
+		vim.wo.wrap = false
+		vim.wo.linebreak = false
+		print("Wrap OFF")
+	else
+		vim.wo.wrap = true
+		vim.wo.linebreak = true
+		print("Wrap ON")
+	end
 end
 
 vimKeymapSet("n", "<leader>w", ToggleWrap, "テキストの折り返しON/OFF")
@@ -32,8 +36,10 @@ vimKeymapSet("n", "<leader>ff", "<Cmd>Telescope find_files<cr>", "ファイル�
 vimKeymapSet("n", "<leader>fg", "<Cmd>Telescope live_grep<cr>", "文字列を検索 (Telescope)")
 
 -- バッファ移動
-vimKeymapSet("n", "L", "<cmd>BufferLineCycleNext<CR>", "次のバッファへ移動")
-vimKeymapSet("n", "H", "<cmd>BufferLineCyclePrev<CR>", "前のバッファへ移動")
+-- vimKeymapSet("n", "L", "<cmd>BufferLineCycleNext<CR>", "次のバッファへ移動")
+-- vimKeymapSet("n", "H", "<cmd>BufferLineCyclePrev<CR>", "前のバッファへ移動")
+vim.keymap.set("n", "<Tab>", "<cmd>BufferLineCycleNext<CR>", opts("Next buffer"))
+vim.keymap.set("n", "<S-Tab>", "<cmd>BufferLineCyclePrev<CR>", opts("Prev buffer"))
 
 -- ターミナルモードからノーマルモードへ
 -- vimKeymapSet("t", "<Esc>", [[<C-\><C-n>]], "ターミナルを抜けてノーマルモードへ")
@@ -43,6 +49,7 @@ vimKeymapSet("n", "<C-h>", "<C-w>h", "左のウィンドウへ移動")
 vimKeymapSet("n", "<C-j>", "<C-w>j", "下のウィンドウへ移動")
 vimKeymapSet("n", "<C-k>", "<C-w>k", "上のウィンドウへ移動")
 vimKeymapSet("n", "<C-l>", "<C-w>l", "右のウィンドウへ移動")
+vimKeymapSet("n", "n", "<cmd>NvimTreeToggle<CR>", "ファイラーの表示/非表示")
 
 -- 実装箇所へジャンプ
 -- vimKeymapSet("n", "go", vim.lsp.buf.implementation, "実装箇所へジャンプ")
