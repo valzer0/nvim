@@ -26,13 +26,16 @@ local function custom_create()
 			vim.notify("❌ '..' は使えません", vim.log.levels.ERROR)
 			return
 		end
-		if input:sub(1, 1) == "/" then
-			vim.notify("❌ 入力の先頭に '/' は使えません", vim.log.levels.ERROR)
-			return
-		end
+		-- if input:sub(1, 1) == "/" then
+		-- 	vim.notify("❌ 入力の先頭に '/' は使えません", vim.log.levels.ERROR)
+		-- 	return
+		-- end
 
 		local is_directory = input:sub(-1) == "/"
 		local filename = current_dirname .. input -- 生パス（存在チェック/作成はこちらで）
+		if input:sub(1, 1) == "/" then
+			filename = vim.fn.getcwd(0, 0) .. input
+		end
 		local dirname = vim.fn.fnamemodify(filename, ":h")
 
 		-- 既存チェック
@@ -127,18 +130,21 @@ return {
 					-- "^.gitignore$",
 				},
 			},
-			-- -- Live Filter オプション（任意）
-			-- live_filter = {
-			--   prefix = "🔍 ", -- プロンプト前に付く文字列
-			--   always_show_folders = true, -- true にするとフォルダは常に表示
-			-- },
 			on_attach = function(bufnr)
 				local api = require("nvim-tree.api")
 				api.config.mappings.default_on_attach(bufnr)
 				local function opts(desc)
 					return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
 				end
-				vim.keymap.set("n", "<CR>", api.node.open.edit, opts("Open"))
+				-- デフォルトの <CR> を上書きして「開く＋ツリー閉じる」にする
+				vim.keymap.set("n", "<CR>", function()
+					api.node.open.edit()
+					-- -- ファイルの場合はツリーを閉じる
+					-- local node = api.tree.get_node_under_cursor()
+					-- if node and node.type == "file" then
+					-- 	api.tree.close()
+					-- end
+				end, opts("Open and Close Tree (file only)"))
 
 				vim.keymap.set("n", "v", api.node.open.vertical, opts("Vertical Split"))
 				vim.keymap.set("n", "s", api.node.open.horizontal, opts("Horizontal Split"))
@@ -147,24 +153,11 @@ return {
 				--   デフォルトでは 'H' に割り当てられていますが、好みで変更できます。
 				vim.keymap.set("n", "h", api.tree.toggle_hidden_filter, opts("Toggle Dotfiles"))
 
-				-- -- 使いやすいキーに上書きしても OK
-				-- vim.keymap.set("n", "/", api.live_filter.start, opts("Live Filter: Start"))
-				-- vim.keymap.set("n", "<Esc>", api.live_filter.clear, opts("Live Filter: Clear"))
-
 				-- ■.gitignore トグル
 				vim.keymap.set("n", "I", api.tree.toggle_gitignore_filter, opts("Toggle Git-ignored"))
 
 				vim.keymap.set("n", "<C-t>", api.tree.change_root_to_parent, opts("Up"))
 				vim.keymap.set("n", "?", api.tree.toggle_help, opts("Help"))
-				-- vim.keymap.set("n", "n", ":NvimTreeToggle<CR>", opts("ファイラーの表示/非表示"))
-				-- vim.keymap.set(
-				-- 	"n",
-				-- 	"<C-n>",
-				-- 	":NvimTreeToggle<CR>",
-				-- 	{ noremap = true, silent = true, desc = "ファイラーの表示/非表示" }
-				-- )
-				-- vim.keymap.set("n", "H", "<cmd>BufferLineCyclePrev<CR>", opts("Prev buffer"))
-				-- vim.keymap.set("n", "L", "<cmd>BufferLineCycleNext<CR>", opts("Next buffer"))
 
 				-- デフォルトの a キーを無効化して上書き
 				vim.keymap.set("n", "a", custom_create, opts("Custom Create File"))

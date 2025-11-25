@@ -14,7 +14,7 @@ return {
 
   -- Include スニペット
   sp("inc", {
-    t("@include "), i(1, "name"), t(";"),
+    t("@include "), i(1, "name"), t(".apply-theme($type);"),
   }),
 
   -- Media Query スニペット

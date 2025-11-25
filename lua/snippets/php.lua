@@ -9,10 +9,7 @@ local rep = require("luasnip.extras").rep
 
 return {
 	sp("fd", {
-		t({ "<?php " }),
-		t({ "", "  " }),
-		i(0),
-		t({ "", "?>" }),
+		t({ "<?php " }), i(0), t({ " ?>" }),
 	}),
 	-- HTMLタグ
 	sp("tag", {

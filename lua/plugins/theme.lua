@@ -25,7 +25,7 @@ return {
 				render = "default", -- 表示スタイル
 				-- render    = "wrapped-default",   -- ★折り返し対応レンダラ
 				stages = "fade_in_slide_out", -- アニメーション
-				timeout = 2000, -- 表示時間（ms）
+				timeout = 800, -- 表示時間（ms）
 			})
 
 			-- Neovim の notify を上書き

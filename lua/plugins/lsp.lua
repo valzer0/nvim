@@ -7,6 +7,17 @@ return {
 		end,
 	},
 	{
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		config = function()
+			require("mason-tool-installer").setup({
+				ensure_installed = {
+					"shellcheck",
+					"shfmt",
+				},
+			})
+		end,
+	},
+	{
 		"williamboman/mason-lspconfig.nvim",
 		-- "mason-org/mason-lspconfig.nvim",
 		opts = {},
@@ -25,6 +36,7 @@ return {
 					"gopls", -- Golang
 					"rust_analyzer", -- Rust
 					"nginx_language_server", -- Nginx
+					"bashls", -- Bash / Shell Script
 				}, -- 自動インストール対象
 			})
 		end,
@@ -55,7 +67,7 @@ return {
 				end
 				map("gd", vim.lsp.buf.definition)
 				map("gr", vim.lsp.buf.references)
-				map("K", vim.lsp.buf.hover)
+				-- map("K", vim.lsp.buf.hover)
 				map("<leader>rn", vim.lsp.buf.rename)
 				map("<leader>ca", vim.lsp.buf.code_action)
 			end
@@ -186,7 +198,16 @@ return {
 				capabilities = capabilities,
 				settings = {
 					intelephense = {
-						files = { maxSize = 5 * 1024 * 1024 }, -- 大規模プロジェクト用に上限を 5MB に
+						files = {
+							maxSize = 5 * 1024 * 1024, -- 大規模プロジェクト用に上限を 5MB に
+							exclude = {
+								"**/node_modules/**",
+								"**/vendor/**",
+								"**/wp-includes/**",
+								"**/wp-admin/**",
+								"**/wp-content/**",
+							},
+						},
 					},
 					environment = {
 						includePaths = {
@@ -287,17 +308,17 @@ return {
 				},
 			})
 			-- Nginx
-			lspconfig.nginx_language_server.setup({
-				capabilities = capabilities,
-				filetypes = { "nginx" },
-			})
+			-- lspconfig.nginx_language_server.setup({
+			-- 	capabilities = capabilities,
+			-- 	filetypes = { "nginx" },
+			-- })
 			-- capabilities を LSP に渡す
 			local util = require("lspconfig.util")
 
 			lspconfig.nginx_language_server.setup({
 				capabilities = capabilities, -- ★これ重要
 				filetypes = { "nginx" },
-				root_dir = util.root_pattern(".git", "nginx.conf") or vim.fs.dirname,
+				-- root_dir = util.root_pattern(".git", "nginx.conf") or vim.fs.dirname,
 			})
 
 			-- Rust
@@ -326,6 +347,16 @@ return {
 			--       }
 			--     }
 			--   }
+			-- })
+
+			-- -- Bash/ShellScript
+			-- lspconfig.bashls.setup({
+			-- 	settings = {
+			-- 		bashIde = {
+			-- 			shellcheckPath = "shellcheck",
+			-- 			shfmtPath = "shfmt",
+			-- 		},
+			-- 	},
 			-- })
 		end,
 	},

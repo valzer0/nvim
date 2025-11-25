@@ -1,4 +1,85 @@
 --[[
+===========================================================================
+📘 Neovim autocmd イベント一覧（よく使われる & 覚えておくと便利なもの）
+===========================================================================
+🔹 基本（ファイル・バッファ操作）
+---------------------------------------------------------------------------
+BufNewFile     : 新しいファイルを開いたとき（まだ存在しないファイル）
+BufReadPre     : ファイルを読み込む直前
+BufReadPost    : ファイルを読み込んだ直後
+BufWritePre    : バッファを書き込む直前（保存直前にフック）
+BufWritePost   : 書き込み完了直後（保存後の処理に便利）
+BufEnter       : バッファに入ったとき（アクティブになった瞬間）
+BufLeave       : バッファを離れる直前
+BufUnload      : バッファをアンロードする直前（:bdeleteなど）
+BufDelete      : バッファを削除するとき
+BufWinEnter    : バッファがウィンドウに表示されたとき
+BufWinLeave    : バッファがウィンドウから外れたとき
+FileType       : 'filetype' が設定されたとき（例：vim.bo.filetype = "lua"）
+Syntax          : シンタックスハイライトが設定されたとき
+
+🔹 編集・入力関連
+---------------------------------------------------------------------------
+InsertEnter    : 挿入モードに入ったとき
+InsertLeave    : 挿入モードを抜けたとき
+TextChanged    : テキストが変更されたとき（ノーマルモード）
+TextChangedI   : 挿入モードでテキストが変更されたとき
+TextYankPost   : テキストをヤンク（コピー）した直後（ハイライトなどに便利）
+CmdlineEnter   : コマンドラインモードに入ったとき（:開始）
+CmdlineLeave   : コマンドラインモードを抜けたとき
+
+🔹 ウィンドウ・タブ・UI関連
+---------------------------------------------------------------------------
+WinEnter       : ウィンドウに入ったとき
+WinLeave       : ウィンドウを離れる直前
+WinNew         : 新しいウィンドウが作成されたとき
+TabEnter       : タブページに入ったとき
+TabLeave       : タブページを離れたとき
+FocusGained    : Neovimウィンドウがフォーカスを得たとき（他アプリから戻る）
+FocusLost      : Neovimウィンドウがフォーカスを失ったとき（他アプリに移動）
+CursorHold     : 一定時間カーソルを動かさなかったとき（updatetimeで調整）
+CursorMoved    : カーソルが動いたとき
+CursorMovedI   : 挿入モードでカーソルが動いたとき
+
+🔹 起動・終了関連
+---------------------------------------------------------------------------
+VimEnter       : Neovimの起動完了直後（プラグイン初期化など）
+VimLeavePre    : 終了直前（保存処理やクリーンアップなどに便利）
+VimLeave       : 終了処理の最後に呼ばれる
+UIEnter        : UIアタッチ後（NeovimのUI層が起動完了した時）
+UILeave        : UIがデタッチされたとき
+
+🔹 ファイル検知・自動リロード関連
+---------------------------------------------------------------------------
+FocusGained    : フォーカスが戻ったとき（他アプリから戻った瞬間）
+BufEnter       : バッファを開いたとき
+→ 組み合わせ例: 自動で外部変更をチェック
+   vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
+     command = "checktime"
+   })
+
+🔹 その他・特殊イベント
+---------------------------------------------------------------------------
+ColorScheme    : カラースキームが変更されたとき
+DirChanged     : カレントディレクトリが変わったとき（:cd など）
+OptionSet      : オプション値が変更されたとき
+DiagnosticChanged : LSPの診断結果が変化したとき
+LspAttach      : LSPクライアントがバッファにアタッチされたとき
+LspDetach      : LSPクライアントがバッファからデタッチされたとき
+TermOpen       : ターミナルバッファが開かれたとき
+TermClose      : ターミナルバッファが閉じられたとき
+RecordingEnter : マクロ記録が開始されたとき
+RecordingLeave : マクロ記録が終了したとき
+
+===========================================================================
+💡 ヒント:
+ :help autocmd-events
+ :help nvim_create_autocmd
+ で全イベントの完全リストと詳細説明を確認できます。
+===========================================================================
+--]]
+
+--[[
   自動コマンド設定: 外部変更されたファイルの自動チェック
 
   この設定は、Neovim にフォーカスが戻ったときやバッファを切り替えたときに
@@ -14,99 +95,6 @@
   Git や他のツールでファイルを更新した際の反映漏れを防ぎます。
 ]]
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, { command = "checktime" })
-
--- -- Neovim起動時にファイルが開かれていない場合、空のバッファを編集・保存不可にする
--- vim.api.nvim_create_autocmd("VimEnter", {
---   pattern = "*",
---   callback = function()
---
---     -- (任意) 何かメッセージを表示したい場合
---     vim.notify("Welcome!", vim.log.levels.INFO)
---     -- 無視したいファイルタイプ（主にファイラーなど）
---     local ignore_filetypes = {
---       netrw = true,    -- Neovim標準のファイラー
---       NvimTree = true, -- NvimTreeプラグイン
---       -- 他に使っているファイラーがあればここに追加
---       -- oil = true,
---     }
---     -- メッセージを格納するためのテーブル（Luaの配列のようなもの）
---     local messages = {}
---     local is_
---
---     -- vim.api.nvim_list_bufs() で現在有効なすべてのバッファ番号のリストを取得し、ループ処理する
---     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
---       -- バッファ名を取得
---       local bufname = vim.api.nvim_buf_get_name(bufnr)
---       if bufname == "" then
---         bufname = "[No Name]" -- バッファ名がない場合は代替テキストを表示
---       end
---
---       -- バッファのファイルタイプを取得
---       local filetype = vim.bo[bufnr].filetype
---       if filetype == "" then
---         filetype = "[no filetype]" -- ファイルタイプが設定されていない場合は代替テキストを表示
---       end
---
---       -- 表示する文字列をフォーマットして作成
---       local line = string.format("Buffer %d: %s (filetype: %s)", bufnr, bufname, filetype)
---       -- 作成した文字列を messages テーブルに追加
---       table.insert(messages, line)
---     end
---
---     -- messages テーブル内のすべての文字列を改行文字("\n")で連結し、一つのメッセージにする
---     local final_message = table.concat(messages, "\n")
---
---     -- vim.notifyで最終的なメッセージを通知として表示する
---     vim.notify(final_message, vim.log.levels.INFO, { title = "Buffer Filetypes" })
---
---     local current_buf_name = vim.api.nvim_buf_get_name(0)
---     local current_filetype = vim.bo[0].filetype
---
---
---     -- 条件:
---     -- 1. 現在のバッファにファイル名がない
---     -- 2. 現在のファイルタイプが、無視リストに含まれていない
---     if current_buf_name == "" and not ignore_filetypes[current_filetype] then
---       -- バッファの種類を 'nofile' に設定し、保存不可にする
---       vim.bo.buftype = "nofile"
---
---       -- バッファを編集不可に設定する
---       vim.bo.modifiable = false
---
---       -- (任意) 何かメッセージを表示したい場合
---       -- vim.notify("Welcome!", vim.log.levels.INFO)
---     end
---   end,
---   desc = "起動時にファイルが開かれていない場合、空のバッファを編集・保存不可にする",
--- })
---
----@return '"none"'|'"dir"'|'"file"'
-local function startup_arg_type()
-	local argc = vim.fn.argc() -- 引数の数
-
-	-- 引数なし
-	if argc == 0 then
-		return "none"
-	end
-
-	-- -- argv(0) が 1 つ目の “編集対象” 引数
-	local path = vim.fn.argv(0)
-
-	if path == "NvimTree_1" then
-		return "dir"
-	end
-
-	---@cast path string   -- ← 型キャストで警告解消
-	path = vim.fn.fnamemodify(path, ":p")
-
-	if vim.fn.isdirectory(path) == 1 then
-		-- ディレクトリー指定
-		return "dir"
-	else
-		-- ファイル指定（存在しなくても OK）
-		return "file"
-	end
-end
 
 -- 例: VimEnter で自動実行して確認
 vim.api.nvim_create_autocmd("VimEnter", {
@@ -279,5 +267,101 @@ vim.api.nvim_create_autocmd("FocusGained", {
 		if current ~= "com.apple.keylayout.ABC" then
 			vim.fn.system("im-select com.apple.keylayout.ABC")
 		end
+	end,
+})
+
+-- -- 3) HTML/JSX/PHP/テンプレ系での自動適用（他の filetype も足せる）
+-- vim.api.nvim_create_autocmd("FileType", {
+-- 	pattern = {
+-- 		"html",
+-- 		"xml",
+-- 		"javascript",
+-- 		"typescript",
+-- 		"typescriptreact",
+-- 		"tsx",
+-- 		"vue",
+-- 		"svelte",
+-- 		"php",
+-- 		"twig",
+-- 		"astro",
+-- 	},
+-- 	callback = function()
+-- 		vim.opt_local.foldmethod = "expr"
+-- 		vim.opt_local.foldexpr = "nvim_treesitter#foldexpr()"
+-- 		vim.opt_local.foldlevel = 99 -- 初期表示は展開
+-- 		vim.opt_local.foldlevelstart = 99
+-- 		vim.opt_local.foldenable = true
+-- 	end,
+-- })
+-- 超巨大ファイルで重いときのフォールバック
+-- vim.api.nvim_create_autocmd("BufReadPre", {
+-- 	pattern = { "*.min.*", "*.prod.*" },
+-- 	callback = function(args)
+-- 		if vim.fn.getfsize(args.file) > 800 * 1024 then -- 800KB以上なら簡易化
+-- 			vim.opt.foldmethod = "syntax" -- あるいは "manual"
+-- 			vim.opt.foldexpr = nil -- 新API
+-- 		end
+-- 	end,
+-- })
+
+-- 親ディレクトリを辿って "nginx.d" があれば nginx filetype にする
+-- autocmd（自動コマンド）を登録
+-- 対象イベント: ファイルを開いたとき (BufRead) または新規作成したとき (BufNewFile)
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	-- パターン: 拡張子が .conf のファイルに限定
+	-- pattern = "*.conf",
+	pattern = { "*.conf", "*.conf.template" },
+
+	-- コールバック関数: 条件に応じて filetype を設定する
+	callback = function(args)
+		local path = vim.fn.expand(args.file)
+		local dirPath = vim.fn.fnamemodify(path, ":h")
+		local targets = { "nginx.inc.d", "nginx.template.d", "nginx.dist" }
+		local parts = vim.split(dirPath, "/")
+		local has_nginxd = false
+		for _, value in ipairs(targets) do
+			if vim.tbl_contains(parts, value) then
+				has_nginxd = true
+				break
+			end
+		end
+
+		if args.file:match("%.template$") then
+			has_nginxd = true
+		end
+
+		if has_nginxd then
+			vim.bo.filetype = "nginx"
+			vim.opt_local.expandtab = true -- タブをスペースに変換
+			vim.opt_local.shiftwidth = 4 -- 自動インデントの幅
+			vim.opt_local.tabstop = 4 -- タブキーの幅
+			vim.opt_local.softtabstop = 4 -- バックスペースなどの幅も4に
+		end
+	end,
+})
+
+-- *.shの場合は、bashファイルとして認識させる（LSP対策）
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	-- パターン: 拡張子が .conf のファイルに限定
+	pattern = { "*.sh", ".zshrc" },
+
+	-- コールバック関数: 条件に応じて filetype を設定する
+	callback = function(args)
+		vim.bo.filetype = "bash"
+		vim.opt_local.expandtab = true -- タブをスペースに変換
+		vim.opt_local.shiftwidth = 4 -- 自動インデントの幅
+		vim.opt_local.tabstop = 4 -- タブキーの幅
+		vim.opt_local.softtabstop = 4 -- バックスペースなどの幅も4に
+	end,
+})
+
+-- *.envの場合は、envファイルとして認識させる（LSP対策）
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	-- パターン: 拡張子が .env のファイルに限定
+	pattern = "*.env",
+
+	-- コールバック関数: 条件に応じて filetype を設定する
+	callback = function(args)
+		vim.bo.filetype = "env"
 	end,
 })

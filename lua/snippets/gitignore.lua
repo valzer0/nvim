@@ -8,11 +8,17 @@ local rep = require("luasnip.extras").rep
 return {
 	sp('basic', {
 		t({ '# Basic Setting' }),
-		t({ '', 'logs' }),
+		t({ '', '/logs/' }),
 		t({ '', '*.env' }),
-	}),
-	sp('macos', {
-		t({ '# Mac OS' }),
+		t({ '', '# Neovim/Vim swap files' }),
+		t({ '', '*.swp' }),
+		t({ '', '*.swo' }),
+		t({ '', '*.swx' }),
+		t({ '', '# Neovim undo/backup files' }),
+		t({ '', '*.un~' }),
+		t({ '', '*.bak' }),
+		t({ '', '*.tmp' }),
+		t({ '', '# Mac OS' }),
 		t({ '', '.DS_Store' }),
 		t({ '', '.AppleDouble' }),
 		t({ '', '.LSOverride' }),

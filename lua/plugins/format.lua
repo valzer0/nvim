@@ -49,6 +49,10 @@ return {
 					-- （任意）TOML も整えるなら:
 					toml = { "taplo" },
 					lua = { "stylua" },
+
+					sh = { "shfmt" },
+					bash = { "shfmt" },
+					zsh = { "shfmt" }, -- 必要なら
 				},
 
 				-- 保存時に自動整形
@@ -90,6 +94,10 @@ return {
 					clang_format = {
 						-- ルート探索（.clang-format があればそれを使用）
 						cwd = util.root_file({ ".clang-format", ".clang-format.yaml", ".clang-format.yml" }),
+					},
+					-- ▼ shfmt の詳細設定（bash 前提にしたいなら）
+					shfmt = {
+						prepend_args = { "-ln=bash", "-i", "2", "-ci" }, -- bash, インデント2, case文インデント
 					},
 				},
 			}
